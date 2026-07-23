@@ -1,0 +1,26 @@
+# Secrets / local config
+.env
+.env.*
+!.env.example
+*.tfvars
+!*.tfvars.example
+.dev.vars
+
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+crash.*.log
+
+# Node / wrangler
+node_modules/
+.wrangler/
+
+# Python
+__pycache__/
+*.pyc
+
+# OS
+.DS_Store
