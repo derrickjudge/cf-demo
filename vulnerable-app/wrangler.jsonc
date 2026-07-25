@@ -1,0 +1,16 @@
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "cf-demo-vulnerable-app",
+  "main": "src/entry.py",
+  "compatibility_date": "2026-07-24",
+  "compatibility_flags": ["python_workers"],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "cf-demo-vulnerable-app-db",
+      // Placeholder — local dev only. Terraform (Phase 5) creates the real
+      // D1 database and replaces this whole file via a rendered template.
+      "database_id": "00000000-0000-0000-0000-000000000000"
+    }
+  ]
+}

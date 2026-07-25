@@ -1,0 +1,12 @@
+[project]
+name = "cf-demo-vulnerable-app"
+version = "0.1.0"
+description = "Intentionally vulnerable Cloudflare Worker — WAF/rate-limit demo bait"
+requires-python = ">=3.13"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "workers-py",
+    "workers-runtime-sdk",
+]
