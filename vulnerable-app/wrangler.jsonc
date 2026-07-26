@@ -8,9 +8,9 @@
     {
       "binding": "DB",
       "database_name": "cf-demo-vulnerable-app-db",
-      // Placeholder — local dev only. Terraform (Phase 5) creates the real
-      // D1 database and replaces this whole file via a rendered template.
-      "database_id": "00000000-0000-0000-0000-000000000000"
+      // Real database ID, created by Terraform (terraform/sites/vulnerable-app/d1.tf).
+      // Not a secret -- same category as a zone/account ID.
+      "database_id": "37ad01fe-1579-4931-9112-86de690163db"
     }
   ]
 }
