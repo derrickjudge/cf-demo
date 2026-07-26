@@ -20,7 +20,7 @@ jobs:
         with:
           node-version: "24"
 
-      - uses: astral-sh/setup-uv@v9
+      - uses: astral-sh/setup-uv@v9.0.0
 
       - name: Deploy via pywrangler
         run: uv run pywrangler deploy
