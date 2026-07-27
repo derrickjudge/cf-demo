@@ -9,5 +9,8 @@ resource "cloudflare_ruleset" "custom_rules" {
     description = "Block the specific SQLi/XSS payloads this demo sends"
     expression  = "(http.request.uri.path eq \"/search\" and url_decode(http.request.uri.query) contains \"'\") or (http.request.uri.path eq \"/greet\" and url_decode(http.request.uri.query) contains \"<script\")"
     action      = "block"
+    # Disabled for the live demo baseline -- flip back to true on stage to
+    # show the protected state, pushed through the same CI/CD pipeline.
+    enabled     = false
   }]
 }
