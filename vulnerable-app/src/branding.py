@@ -178,19 +178,6 @@ a:hover { text-decoration: underline; }
   border: 1px solid var(--vc-border);
 }
 
-.auth-hint {
-  font-size: 0.8rem;
-  color: var(--vc-muted);
-  margin: 1.25rem 0 0;
-}
-.auth-hint code {
-  background: var(--vc-bg);
-  padding: 0.1rem 0.35rem;
-  border-radius: 4px;
-}
-
-.auth-footer { margin-top: 0.5rem; font-size: 0.85rem; }
-
 .page-footer {
   text-align: center;
   font-size: 0.8rem;
@@ -508,9 +495,6 @@ def render_login_page() -> str:
         <input id="password" name="password" type="password" autocomplete="current-password" required>
         <button type="submit" id="login-submit">Sign in</button>
       </form>
-
-      <p class="auth-hint">Demo accounts: <code>alice</code>, <code>bob</code>, <code>admin</code></p>
-      <p class="auth-footer"><a href="/dashboard">View Dashboard &rarr;</a></p>
     </section>
   </main>
 
