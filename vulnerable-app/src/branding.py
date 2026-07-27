@@ -172,6 +172,11 @@ a:hover { text-decoration: underline; }
   color: var(--vc-danger);
   border: 1px solid rgba(220, 38, 38, 0.2);
 }
+.alert-info {
+  background: var(--vc-bg);
+  color: var(--vc-muted);
+  border: 1px solid var(--vc-border);
+}
 
 .auth-hint {
   font-size: 0.8rem;
@@ -276,6 +281,45 @@ a:hover { text-decoration: underline; }
 .activity-list li:last-child { border-bottom: none; }
 .activity-list span { font-weight: 600; color: var(--vc-ink); }
 .activity-list time { color: var(--vc-muted); }
+
+.search-form { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+.search-form input {
+  flex: 1;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--vc-border);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: var(--vc-ink);
+}
+.search-form input:focus {
+  outline: none;
+  border-color: var(--vc-primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+.search-form button {
+  padding: 0.55rem 1.25rem;
+  border: none;
+  border-radius: 8px;
+  background: var(--vc-primary);
+  color: #ffffff;
+  font-weight: 600;
+  cursor: pointer;
+}
+.search-form button:hover { background: var(--vc-primary-dark); }
+
+.results-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.results-table th, .results-table td {
+  text-align: left;
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid var(--vc-border);
+}
+.results-table th {
+  color: var(--vc-muted);
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
 """
 
 LOGIN_SCRIPT = """
@@ -317,6 +361,115 @@ form.addEventListener("submit", async (event) => {
   }
 });
 """
+
+
+SEARCH_SCRIPT = """
+const searchForm = document.getElementById("search-form");
+const searchStatus = document.getElementById("search-status");
+const resultsTable = document.getElementById("search-results");
+const resultsBody = resultsTable.querySelector("tbody");
+
+function showStatus(message, kind) {
+  searchStatus.textContent = message;
+  searchStatus.className = "alert alert-" + kind;
+  searchStatus.hidden = false;
+}
+
+searchForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  searchStatus.hidden = true;
+  resultsTable.hidden = true;
+  resultsBody.innerHTML = "";
+
+  const q = document.getElementById("search-q").value;
+  let response;
+  try {
+    response = await fetch("/search?q=" + encodeURIComponent(q));
+  } catch (err) {
+    showStatus("Search request failed.", "error");
+    return;
+  }
+
+  if (response.status === 403) {
+    showStatus("Blocked by Cloudflare WAF (403).", "error");
+    return;
+  }
+  if (!response.ok) {
+    showStatus("Search failed (HTTP " + response.status + ").", "error");
+    return;
+  }
+
+  let rows;
+  try {
+    rows = await response.json();
+  } catch (err) {
+    showStatus("Search returned an unexpected response.", "error");
+    return;
+  }
+
+  if (!Array.isArray(rows) || rows.length === 0) {
+    showStatus("No results.", "info");
+    return;
+  }
+
+  for (const row of rows) {
+    const tr = document.createElement("tr");
+    for (const key of ["id", "username", "email", "password_hash"]) {
+      const td = document.createElement("td");
+      td.textContent = row[key];
+      tr.appendChild(td);
+    }
+    resultsBody.appendChild(tr);
+  }
+  resultsTable.hidden = false;
+});
+"""
+
+NAV_ITEMS = [
+    ("Overview", "/dashboard"),
+    ("Analytics", "#"),
+    ("Customers", "/customers"),
+    ("Billing", "#"),
+    ("Settings", "#"),
+]
+
+
+def _render_sidenav(active_label: str) -> str:
+    """Render the sidebar nav links, marking the active page."""
+    links = []
+    for label, href in NAV_ITEMS:
+        classes = "active" if label == active_label else ""
+        class_attr = f' class="{classes}"' if classes else ""
+        links.append(f'<a{class_attr} href="{href}">{label}</a>')
+    return "\n        ".join(links)
+
+
+def _render_app_shell(title: str, active_label: str, page_content: str) -> str:
+    """Wrap page_content in the shared Value Corp topbar/sidebar app shell."""
+    return f"""<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{title} - Value Corp</title>
+<link rel="icon" type="image/svg+xml" href="{FAVICON_HREF}">
+<style>{BASE_CSS}</style>
+</head>
+<body class="app-page">
+  <div class="app-shell">
+    <aside class="sidebar">
+      <span class="brand logo-mark">{SVG_LOGO_MARK}</span>
+      <span class="wordmark">Value<strong>Corp</strong></span>
+      <nav class="sidenav">
+        {_render_sidenav(active_label)}
+      </nav>
+    </aside>
+    <div class="app-main">
+      {page_content}
+    </div>
+  </div>
+</body>
+</html>"""
 
 
 def render_login_page() -> str:
@@ -369,29 +522,7 @@ def render_login_page() -> str:
 
 def render_dashboard_page() -> str:
     """Render the Value Corp post-login dashboard as a full HTML document string."""
-    return f"""<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Dashboard - Value Corp</title>
-<link rel="icon" type="image/svg+xml" href="{FAVICON_HREF}">
-<style>{BASE_CSS}</style>
-</head>
-<body class="app-page">
-  <div class="app-shell">
-    <aside class="sidebar">
-      <span class="brand logo-mark">{SVG_LOGO_MARK}</span>
-      <span class="wordmark">Value<strong>Corp</strong></span>
-      <nav class="sidenav">
-        <a class="active" href="/dashboard">Overview</a>
-        <a href="#">Analytics</a>
-        <a href="#">Customers</a>
-        <a href="#">Billing</a>
-        <a href="#">Settings</a>
-      </nav>
-    </aside>
-    <div class="app-main">
+    content = """
       <header class="app-topbar">
         <h1>Dashboard</h1>
         <a class="signout" href="/login">Sign out</a>
@@ -410,7 +541,37 @@ def render_dashboard_page() -> str:
           <li><span>admin</span> rotated API key <time>1d ago</time></li>
         </ul>
       </section>
-    </div>
-  </div>
-</body>
-</html>"""
+    """
+    return _render_app_shell("Dashboard", "Overview", content)
+
+
+def render_customers_page() -> str:
+    """Render the Value Corp customer search page as a full HTML document string.
+
+    The search box calls the existing GET /search endpoint -- the SQLi bait
+    -- so the injection demo can be triggered by typing into the page
+    instead of only via curl. No new vulnerability is introduced here: this
+    is presentation only, /search's behavior is unchanged.
+    """
+    content = f"""
+      <header class="app-topbar">
+        <h1>Customers</h1>
+        <a class="signout" href="/login">Sign out</a>
+      </header>
+      <section class="panel">
+        <h2>Customer Search</h2>
+        <form id="search-form" class="search-form" novalidate>
+          <input id="search-q" name="q" type="text" placeholder="Search by username...">
+          <button type="submit">Search</button>
+        </form>
+        <div id="search-status" class="alert" hidden></div>
+        <table id="search-results" class="results-table" hidden>
+          <thead>
+            <tr><th>ID</th><th>Username</th><th>Email</th><th>Password Hash</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+      <script>{SEARCH_SCRIPT}</script>
+    """
+    return _render_app_shell("Customers", "Customers", content)

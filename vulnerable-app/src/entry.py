@@ -8,7 +8,7 @@ import hmac
 import logging
 from urllib.parse import ParseResult, parse_qs, urlparse
 
-from branding import render_dashboard_page, render_login_page
+from branding import render_customers_page, render_dashboard_page, render_login_page
 from workers import Response, WorkerEntrypoint
 
 logger = logging.getLogger(__name__)
@@ -33,6 +33,8 @@ class Default(WorkerEntrypoint):
             return self._login_page()
         if url.path == "/dashboard":
             return self._dashboard_page()
+        if url.path == "/customers":
+            return self._customers_page()
         if url.path == "/search":
             return await self._search(params)
         if url.path == "/greet":
@@ -55,6 +57,13 @@ class Default(WorkerEntrypoint):
         """Serve the Value Corp branded post-login dashboard (decorative, no real auth)."""
         return Response(
             render_dashboard_page(),
+            headers={"content-type": "text/html; charset=utf-8"},
+        )
+
+    def _customers_page(self) -> Response:
+        """Serve the Value Corp customer search page (calls GET /search)."""
+        return Response(
+            render_customers_page(),
             headers={"content-type": "text/html; charset=utf-8"},
         )
 
