@@ -11,6 +11,6 @@ resource "cloudflare_ruleset" "custom_rules" {
     action      = "block"
     # Disabled for the live demo baseline -- flip back to true on stage to
     # show the protected state, pushed through the same CI/CD pipeline.
-    enabled     = false
+    enabled = false
   }]
 }
