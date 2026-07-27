@@ -4,6 +4,13 @@
   "main": "src/entry.py",
   "compatibility_date": "2026-07-24",
   "compatibility_flags": ["python_workers"],
+  // Workers Logs is opt-in -- without this block, nothing is ingested into
+  // Observability regardless of real traffic. head_sampling_rate: 1 logs
+  // every request (fine at demo volume; would tune down for real prod load).
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  },
   "d1_databases": [
     {
       "binding": "DB",
