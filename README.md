@@ -232,6 +232,20 @@ rate-limit counter is distributed/eventually-consistent across the edge, so
 enforcement isn't deterministic to an exact request number -- send a burst
 (10+ requests) rather than expecting it to trip on request N precisely.
 
+**Real demo login**: `POST /api/login` succeeds only for username `djudge`,
+checked against a `DEMO_LOGIN_PASSWORD` Worker secret -- never committed,
+set once per environment:
+
+```bash
+cd vulnerable-app
+npx wrangler secret put DEMO_LOGIN_PASSWORD   # prompts, doesn't echo
+```
+
+For local `wrangler dev`, set the same variable in a git-ignored
+`vulnerable-app/.dev.vars` (`DEMO_LOGIN_PASSWORD="..."`) instead. Every other
+credential -- including the seed users below, whose password_hash values are
+fabricated -- still 401s, which is what drives the rate-limit demo.
+
 ## 7. mtpcollective.com onboarding (the real, live site)
 
 **Before touching anything**: inventory every existing record so nothing
