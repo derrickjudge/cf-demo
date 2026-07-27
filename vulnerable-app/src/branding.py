@@ -38,6 +38,7 @@ BASE_CSS = """
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 
 body {
   margin: 0;
@@ -78,6 +79,112 @@ a:hover { text-decoration: underline; }
 }
 .topnav a { color: var(--vc-body); font-weight: 500; font-size: 0.95rem; }
 .topnav a:hover { color: var(--vc-primary); text-decoration: none; }
+.topnav a.active { color: var(--vc-primary); font-weight: 600; }
+.topnav .signin-link {
+  background: var(--vc-primary);
+  color: #ffffff;
+  padding: 0.45rem 1.1rem;
+  border-radius: 8px;
+}
+.topnav .signin-link:hover { background: var(--vc-primary-dark); text-decoration: none; }
+
+.marketing-main { max-width: 960px; margin: 0 auto; padding: 3rem 2rem 4rem; }
+
+.hero { text-align: center; padding: 1rem 1rem 3.5rem; }
+.hero h1 { font-size: 2.25rem; color: var(--vc-ink); margin: 0 0 0.75rem; }
+.hero-sub { color: var(--vc-muted); font-size: 1.05rem; margin: 0 0 1.75rem; }
+
+.cta-button {
+  display: inline-block;
+  background: var(--vc-primary);
+  color: #ffffff;
+  padding: 0.75rem 1.75rem;
+  border-radius: 8px;
+  font-weight: 600;
+}
+.cta-button:hover { background: var(--vc-primary-dark); text-decoration: none; }
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.25rem;
+}
+.feature-card {
+  background: var(--vc-surface);
+  border: 1px solid var(--vc-border);
+  border-radius: 10px;
+  padding: 1.5rem;
+}
+.feature-card h3 { margin: 0 0 0.5rem; color: var(--vc-ink); font-size: 1.05rem; }
+.feature-card p { margin: 0; color: var(--vc-muted); font-size: 0.9rem; }
+
+.page-header { text-align: center; padding: 1rem 1rem 2.5rem; }
+.page-header h1 { font-size: 2rem; color: var(--vc-ink); margin: 0 0 0.5rem; }
+.page-header p { color: var(--vc-muted); font-size: 1rem; margin: 0; }
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+}
+.pricing-card {
+  background: var(--vc-surface);
+  border: 1px solid var(--vc-border);
+  border-radius: 10px;
+  padding: 1.75rem;
+  text-align: center;
+}
+.pricing-card.featured {
+  border-color: var(--vc-primary);
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.15);
+}
+.pricing-card h3 { margin: 0 0 0.5rem; color: var(--vc-ink); }
+.pricing-price { font-size: 2rem; font-weight: 700; color: var(--vc-ink); margin: 0.5rem 0; }
+.pricing-price span { font-size: 0.9rem; font-weight: 400; color: var(--vc-muted); }
+.pricing-features { list-style: none; padding: 0; margin: 1.25rem 0; color: var(--vc-body); font-size: 0.9rem; }
+.pricing-features li { padding: 0.35rem 0; }
+
+.contact-layout {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+.contact-form { display: flex; flex-direction: column; gap: 1rem; }
+.contact-form label { font-size: 0.85rem; font-weight: 600; color: var(--vc-ink); }
+.contact-form input, .contact-form textarea {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--vc-border);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: var(--vc-ink);
+  font-family: inherit;
+}
+.contact-form input:focus, .contact-form textarea:focus {
+  outline: none;
+  border-color: var(--vc-primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+.contact-form button {
+  align-self: flex-start;
+  padding: 0.65rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  background: var(--vc-primary);
+  color: #ffffff;
+  font-weight: 600;
+  cursor: pointer;
+}
+.contact-form button:hover { background: var(--vc-primary-dark); }
+.contact-info {
+  background: var(--vc-surface);
+  border: 1px solid var(--vc-border);
+  border-radius: 10px;
+  padding: 1.5rem;
+}
+.contact-info h3 { margin: 0 0 0.75rem; color: var(--vc-ink); font-size: 1rem; }
+.contact-info p { margin: 0 0 0.5rem; color: var(--vc-muted); font-size: 0.9rem; }
 
 .auth-page {
   min-height: 100vh;
@@ -412,6 +519,43 @@ searchForm.addEventListener("submit", async (event) => {
 });
 """
 
+CONTACT_SCRIPT = """
+const contactForm = document.getElementById("contact-form");
+const contactStatus = document.getElementById("contact-status");
+
+contactForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  contactForm.hidden = true;
+  contactStatus.hidden = false;
+});
+"""
+
+TOPNAV_ITEMS = [
+    ("Product", "/product"),
+    ("Solutions", "/solutions"),
+    ("Pricing", "/pricing"),
+    ("Contact", "/contact"),
+]
+
+
+def _render_topbar(active_label: str = "") -> str:
+    """Render the shared public-site header, marking the active page."""
+    links = []
+    for label, href in TOPNAV_ITEMS:
+        classes = "active" if label == active_label else ""
+        class_attr = f' class="{classes}"' if classes else ""
+        links.append(f'<a{class_attr} href="{href}">{label}</a>')
+    nav_links = "".join(links)
+    return f"""<header class="topbar">
+    <span class="brand logo-mark">{SVG_LOGO_MARK}</span>
+    <span class="wordmark">Value<strong>Corp</strong></span>
+    <nav class="topnav">
+      {nav_links}
+      <a class="signin-link" href="/login">Sign In</a>
+    </nav>
+  </header>"""
+
+
 NAV_ITEMS = [
     ("Overview", "/dashboard"),
     ("Analytics", "#"),
@@ -471,14 +615,7 @@ def render_login_page() -> str:
 <style>{BASE_CSS}</style>
 </head>
 <body class="auth-page">
-  <header class="topbar">
-    <span class="brand logo-mark">{SVG_LOGO_MARK}</span>
-    <span class="wordmark">Value<strong>Corp</strong></span>
-    <nav class="topnav">
-      <a href="#">Product</a><a href="#">Solutions</a>
-      <a href="#">Pricing</a><a href="#">Contact</a>
-    </nav>
-  </header>
+  {_render_topbar()}
 
   <main class="auth-main">
     <section class="auth-card">
@@ -502,6 +639,165 @@ def render_login_page() -> str:
   <script>{LOGIN_SCRIPT}</script>
 </body>
 </html>"""
+
+
+def _render_marketing_page(title: str, active_label: str, page_content: str) -> str:
+    """Wrap page_content in the shared Value Corp public-site topbar/footer shell."""
+    return f"""<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{title} - Value Corp</title>
+<link rel="icon" type="image/svg+xml" href="{FAVICON_HREF}">
+<style>{BASE_CSS}</style>
+</head>
+<body>
+  {_render_topbar(active_label)}
+  <main class="marketing-main">
+    {page_content}
+  </main>
+  <footer class="page-footer">&copy; 2026 Value Corp. All rights reserved.</footer>
+</body>
+</html>"""
+
+
+def render_product_page() -> str:
+    """Render the Value Corp product marketing page."""
+    content = """
+      <section class="hero">
+        <h1>One platform for growth teams</h1>
+        <p class="hero-sub">Search customers, track usage, and manage billing -- all in one place.</p>
+        <a class="cta-button" href="/login">Get Started</a>
+      </section>
+      <section class="feature-grid">
+        <div class="feature-card">
+          <h3>Customer Search</h3>
+          <p>Look up any account in seconds with instant search across your customer base.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Live Analytics</h3>
+          <p>Track active users, revenue, and uptime from a single dashboard.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Billing, Simplified</h3>
+          <p>Automated invoicing and payment tracking built in from day one.</p>
+        </div>
+        <div class="feature-card">
+          <h3>99.98% Uptime</h3>
+          <p>Enterprise-grade infrastructure your team can depend on.</p>
+        </div>
+      </section>
+    """
+    return _render_marketing_page("Product", "Product", content)
+
+
+def render_solutions_page() -> str:
+    """Render the Value Corp solutions marketing page."""
+    content = """
+      <div class="page-header">
+        <h1>Built for every team</h1>
+        <p>Value Corp adapts to how your organization already works.</p>
+      </div>
+      <section class="feature-grid">
+        <div class="feature-card">
+          <h3>Sales Teams</h3>
+          <p>Find and qualify accounts faster with instant customer search.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Customer Support</h3>
+          <p>Resolve tickets quickly with a full view of every account.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Finance &amp; Billing</h3>
+          <p>Keep revenue and invoicing in sync with real-time reporting.</p>
+        </div>
+      </section>
+    """
+    return _render_marketing_page("Solutions", "Solutions", content)
+
+
+def render_pricing_page() -> str:
+    """Render the Value Corp pricing marketing page."""
+    content = """
+      <div class="page-header">
+        <h1>Simple, transparent pricing</h1>
+        <p>Start free, upgrade as your team grows.</p>
+      </div>
+      <section class="pricing-grid">
+        <div class="pricing-card">
+          <h3>Starter</h3>
+          <p class="pricing-price">$29<span>/mo</span></p>
+          <ul class="pricing-features">
+            <li>Up to 5 users</li>
+            <li>Customer search</li>
+            <li>Email support</li>
+          </ul>
+          <a class="cta-button" href="/login">Get Started</a>
+        </div>
+        <div class="pricing-card featured">
+          <h3>Professional</h3>
+          <p class="pricing-price">$99<span>/mo</span></p>
+          <ul class="pricing-features">
+            <li>Up to 50 users</li>
+            <li>Analytics dashboard</li>
+            <li>Priority support</li>
+          </ul>
+          <a class="cta-button" href="/login">Get Started</a>
+        </div>
+        <div class="pricing-card">
+          <h3>Enterprise</h3>
+          <p class="pricing-price">Contact us</p>
+          <ul class="pricing-features">
+            <li>Unlimited users</li>
+            <li>Dedicated support</li>
+            <li>Custom integrations</li>
+          </ul>
+          <a class="cta-button" href="/contact">Contact Sales</a>
+        </div>
+      </section>
+    """
+    return _render_marketing_page("Pricing", "Pricing", content)
+
+
+def render_contact_page() -> str:
+    """Render the Value Corp contact page.
+
+    The form is decorative: submitting shows a confirmation message
+    client-side and does not send data anywhere -- there is no contact
+    backend behind this demo app.
+    """
+    content = f"""
+      <div class="page-header">
+        <h1>Get in touch</h1>
+        <p>Questions about Value Corp? We would love to hear from you.</p>
+      </div>
+      <div class="contact-layout">
+        <div>
+          <form id="contact-form" class="contact-form" novalidate>
+            <label for="contact-name">Name</label>
+            <input id="contact-name" name="name" type="text" required>
+            <label for="contact-email">Email</label>
+            <input id="contact-email" name="email" type="email" required>
+            <label for="contact-message">Message</label>
+            <textarea id="contact-message" name="message" rows="4" required></textarea>
+            <button type="submit">Send Message</button>
+          </form>
+          <div id="contact-status" class="alert alert-info" hidden>
+            Thanks! We will be in touch shortly.
+          </div>
+        </div>
+        <div class="contact-info">
+          <h3>Value Corp HQ</h3>
+          <p>500 Market Street, Suite 400</p>
+          <p>San Francisco, CA 94105</p>
+          <h3>Support</h3>
+          <p>support@letmeshowthevalue.com</p>
+        </div>
+      </div>
+      <script>{CONTACT_SCRIPT}</script>
+    """
+    return _render_marketing_page("Contact", "Contact", content)
 
 
 def render_dashboard_page() -> str:

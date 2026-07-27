@@ -6,12 +6,30 @@ template for real code. Seed data lives in ../schema.sql.
 
 import hmac
 import logging
+from typing import Callable
 from urllib.parse import ParseResult, parse_qs, urlparse
 
-from branding import render_customers_page, render_dashboard_page, render_login_page
+from branding import (
+    render_contact_page,
+    render_customers_page,
+    render_dashboard_page,
+    render_login_page,
+    render_pricing_page,
+    render_product_page,
+    render_solutions_page,
+)
 from workers import Response, WorkerEntrypoint
 
 logger = logging.getLogger(__name__)
+
+# Static public marketing pages, keyed by path. All decorative -- no
+# security-relevant logic, just presentation reused across a common dispatch.
+MARKETING_PAGES: dict[str, Callable[[], str]] = {
+    "/product": render_product_page,
+    "/solutions": render_solutions_page,
+    "/pricing": render_pricing_page,
+    "/contact": render_contact_page,
+}
 
 # The one real demo account. Its password is never committed to the repo --
 # it's checked against the DEMO_LOGIN_PASSWORD Worker secret, set locally via
@@ -35,6 +53,8 @@ class Default(WorkerEntrypoint):
             return self._dashboard_page()
         if url.path == "/customers":
             return self._customers_page()
+        if url.path in MARKETING_PAGES:
+            return self._marketing_page(MARKETING_PAGES[url.path])
         if url.path == "/search":
             return await self._search(params)
         if url.path == "/greet":
@@ -65,6 +85,12 @@ class Default(WorkerEntrypoint):
         return Response(
             render_customers_page(),
             headers={"content-type": "text/html; charset=utf-8"},
+        )
+
+    def _marketing_page(self, render_fn: Callable[[], str]) -> Response:
+        """Serve a static Value Corp marketing page."""
+        return Response(
+            render_fn(), headers={"content-type": "text/html; charset=utf-8"}
         )
 
     async def _login(self, request) -> Response:
