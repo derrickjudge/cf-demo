@@ -4,8 +4,9 @@ Every route below is deliberately insecure; do not reuse this file as a
 template for real code. Seed data lives in ../schema.sql.
 """
 
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import ParseResult, parse_qs, urlparse
 
+from branding import render_dashboard_page, render_login_page
 from workers import Response, WorkerEntrypoint
 
 
@@ -14,6 +15,12 @@ class Default(WorkerEntrypoint):
         url = urlparse(request.url)
         params = parse_qs(url.query)
 
+        if url.path == "/":
+            return self._redirect_to_login(url)
+        if url.path == "/login":
+            return self._login_page()
+        if url.path == "/dashboard":
+            return self._dashboard_page()
         if url.path == "/search":
             return await self._search(params)
         if url.path == "/greet":
@@ -21,6 +28,23 @@ class Default(WorkerEntrypoint):
         if url.path == "/api/login" and request.method == "POST":
             return Response("unauthorized", status=401)
         return Response("not found", status=404)
+
+    def _redirect_to_login(self, url: ParseResult) -> Response:
+        """Redirect the bare root path to the Value Corp login page."""
+        return Response.redirect(f"{url.scheme}://{url.netloc}/login")
+
+    def _login_page(self) -> Response:
+        """Serve the Value Corp branded login page."""
+        return Response(
+            render_login_page(), headers={"content-type": "text/html; charset=utf-8"}
+        )
+
+    def _dashboard_page(self) -> Response:
+        """Serve the Value Corp branded post-login dashboard (decorative, no real auth)."""
+        return Response(
+            render_dashboard_page(),
+            headers={"content-type": "text/html; charset=utf-8"},
+        )
 
     async def _search(self, params):
         # Deliberately vulnerable: raw string interpolation, no .bind() —
