@@ -16,6 +16,7 @@ from branding import (
     render_login_page,
     render_pricing_page,
     render_product_page,
+    render_settings_page,
     render_solutions_page,
 )
 from workers import Response, WorkerEntrypoint
@@ -53,6 +54,8 @@ class Default(WorkerEntrypoint):
             return self._dashboard_page()
         if url.path == "/customers":
             return self._customers_page()
+        if url.path == "/settings":
+            return self._settings_page()
         if url.path in MARKETING_PAGES:
             return self._marketing_page(MARKETING_PAGES[url.path])
         if url.path == "/search":
@@ -84,6 +87,13 @@ class Default(WorkerEntrypoint):
         """Serve the Value Corp customer search page (calls GET /search)."""
         return Response(
             render_customers_page(),
+            headers={"content-type": "text/html; charset=utf-8"},
+        )
+
+    def _settings_page(self) -> Response:
+        """Serve the Value Corp settings page (calls GET /greet)."""
+        return Response(
+            render_settings_page(),
             headers={"content-type": "text/html; charset=utf-8"},
         )
 

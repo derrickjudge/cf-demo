@@ -561,7 +561,7 @@ NAV_ITEMS = [
     ("Analytics", "#"),
     ("Customers", "/customers"),
     ("Billing", "#"),
-    ("Settings", "#"),
+    ("Settings", "/settings"),
 ]
 
 
@@ -855,3 +855,33 @@ def render_customers_page() -> str:
       <script>{SEARCH_SCRIPT}</script>
     """
     return _render_app_shell("Customers", "Customers", content)
+
+
+def render_settings_page() -> str:
+    """Render the Value Corp settings page as a full HTML document string.
+
+    The display-name form submits as a plain HTML GET to the existing
+    /greet endpoint -- the XSS bait -- so the injection demo can be
+    triggered by typing into the page instead of only via curl. A real
+    (non-JS) form submission means the browser does a full navigation and
+    parses /greet's response as a fresh document, so a <script> payload
+    executes exactly as it would via curl -- unlike a JS fetch()-and-inject
+    preview, where browsers treat script tags inserted via innerHTML as
+    inert. No new vulnerability is introduced here: this is presentation
+    only, /greet's behavior is unchanged.
+    """
+    content = """
+      <header class="app-topbar">
+        <h1>Settings</h1>
+        <a class="signout" href="/login">Sign out</a>
+      </header>
+      <section class="panel">
+        <h2>Display Name</h2>
+        <p>This name appears in your personalized greeting banner across Value Corp.</p>
+        <form action="/greet" method="get" class="search-form">
+          <input name="name" type="text" placeholder="Enter your display name">
+          <button type="submit">Preview greeting</button>
+        </form>
+      </section>
+    """
+    return _render_app_shell("Settings", "Settings", content)
