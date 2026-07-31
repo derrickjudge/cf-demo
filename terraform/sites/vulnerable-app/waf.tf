@@ -4,25 +4,13 @@ resource "cloudflare_ruleset" "custom_rules" {
   kind    = "zone"
   phase   = "http_request_firewall_custom"
 
-  rules = [
-    {
-      ref         = "block_sqli_xss_demo_payloads_naive"
-      description = "Naive version of the block rule -- matches the raw query string, no url_decode. Demonstrates why decoding matters: a plain-text payload is blocked, but the same payload %-encoded (e.g. %27 for ') sails through this rule while the origin still decodes and executes it."
-      expression  = "(http.request.uri.path eq \"/search\" and http.request.uri.query contains \"'\") or (http.request.uri.path eq \"/greet\" and http.request.uri.query contains \"<script\")"
-      action      = "block"
-      # Disabled by default -- enable this ALONE (with the decoded rule
-      # below disabled) to demo the bypass, pushed through the same CI/CD
-      # pipeline.
-      enabled = false
-    },
-    {
-      ref         = "block_sqli_xss_demo_payloads"
-      description = "Block the specific SQLi/XSS payloads this demo sends"
-      expression  = "(http.request.uri.path eq \"/search\" and url_decode(http.request.uri.query) contains \"'\") or (http.request.uri.path eq \"/greet\" and url_decode(http.request.uri.query) contains \"<script\")"
-      action      = "block"
-      # Disabled for the live demo baseline -- flip back to true on stage to
-      # show the protected state, pushed through the same CI/CD pipeline.
-      enabled = false
-    },
-  ]
+  rules = [{
+    ref         = "block_sqli_xss_demo_payloads"
+    description = "Block the specific SQLi/XSS payloads this demo sends"
+    expression  = "(http.request.uri.path eq \"/search\" and url_decode(http.request.uri.query) contains \"'\") or (http.request.uri.path eq \"/greet\" and url_decode(http.request.uri.query) contains \"<script\")"
+    action      = "block"
+    # Disabled for the live demo baseline -- flip back to true on stage to
+    # show the protected state, pushed through the same CI/CD pipeline.
+    enabled = false
+  }]
 }
